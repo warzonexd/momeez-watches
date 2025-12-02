@@ -8,15 +8,19 @@ import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import Settings from "./pages/Settings";
 import AdminLogin from "./pages/AdminLogin";
+import About from "./pages/About";
+import FAQ from "./pages/FAQ";
 
 function Router() {
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/admin-login"} component={AdminLogin} />
-      <Route path={"/admin"} component={Admin} />
-      <Route path={"/settings"} component={Settings} />
-      <Route path={"/404"} component={NotFound} />
+      <Route path="/" component={Home} />
+      <Route path="/admin" component={Admin} />
+      <Route path="/admin-login" component={AdminLogin} />
+      <Route path="/about" component={About} />
+      <Route path="/faq" component={FAQ} />
+      <Route path="/settings" component={Settings} />
+      <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
     </Switch>

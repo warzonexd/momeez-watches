@@ -1,8 +1,9 @@
 import { trpc } from "@/lib/trpc";
-import { MessageCircle, Clock, Shield, Truck, Sparkles, Watch, Gem, Smartphone, Crown, LayoutGrid, Menu, X, Sparkle, Star } from "lucide-react";
+import { MessageCircle, Clock, Shield, Truck, Sparkles, Watch, Gem, Smartphone, Crown, LayoutGrid, Menu, X, Sparkle, Star, Facebook, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
+import { Link } from "wouter";
 
 const WHATSAPP_NUMBER = "905343222221";
 
@@ -73,10 +74,12 @@ export default function Home() {
   ];
 
   const navItems = [
-    { href: "#", label: "الرئيسية", active: true },
-    { href: "#features", label: "المميزات", active: false },
-    { href: "#products", label: "المنتجات", active: false },
-    { href: "#contact", label: "اتصل بنا", active: false }
+    { href: "#", label: "الرئيسية", active: true, isExternal: false },
+    { href: "#features", label: "المميزات", active: false, isExternal: false },
+    { href: "#products", label: "المنتجات", active: false, isExternal: false },
+    { href: "/about", label: "من نحن", active: false, isExternal: true },
+    { href: "/faq", label: "الأسئلة الشائعة", active: false, isExternal: true },
+    { href: "#contact", label: "اتصل بنا", active: false, isExternal: false }
   ];
 
   return (
@@ -92,13 +95,21 @@ export default function Home() {
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-8">
               {navItems.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className={item.active ? "text-teal-700 font-semibold hover:text-teal-900 transition-colors" : "text-gray-700 hover:text-teal-700 transition-colors"}
-                >
-                  {item.label}
-                </a>
+                item.isExternal ? (
+                  <Link key={item.href} href={item.href}>
+                    <span className="text-gray-700 hover:text-teal-700 transition-colors cursor-pointer">
+                      {item.label}
+                    </span>
+                  </Link>
+                ) : (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    className={item.active ? "text-teal-700 font-semibold hover:text-teal-900 transition-colors" : "text-gray-700 hover:text-teal-700 transition-colors"}
+                  >
+                    {item.label}
+                  </a>
+                )
               ))}
             </nav>
 
@@ -119,16 +130,27 @@ export default function Home() {
           {isMobileMenuOpen && (
             <nav className="md:hidden mt-4 pb-4 border-t border-gray-200 pt-4">
               <div className="flex flex-col gap-4">
-                {navItems.map((item) => (
+              {navItems.map((item) => (
+                item.isExternal ? (
+                  <Link key={item.href} href={item.href}>
+                    <span
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block py-3 px-4 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors rounded-lg cursor-pointer"
+                    >
+                      {item.label}
+                    </span>
+                  </Link>
+                ) : (
                   <a
                     key={item.href}
                     href={item.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={item.active ? "text-teal-700 font-semibold text-lg" : "text-gray-700 text-lg hover:text-teal-700 transition-colors"}
+                    className="block py-3 px-4 text-gray-700 hover:bg-teal-50 hover:text-teal-700 transition-colors rounded-lg"
                   >
                     {item.label}
                   </a>
-                ))}
+                )
+              ))}
               </div>
             </nav>
           )}
@@ -378,15 +400,31 @@ export default function Home() {
           <div className="flex items-center justify-center gap-2 mb-6">
             <img src="/logo.webp" alt="مميز للساعات" className="h-16 drop-shadow-lg" />
           </div>
-          <p className="text-teal-100 mb-4 text-lg">تواصل معنا عبر واتساب للطلب والاستفسار</p>
+          <p className="text-teal-100 mb-6 text-lg">تواصل معنا عبر واتساب للطلب والاستفسار</p>
           <Button
             onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER}`, "_blank")}
-            className="bg-white text-teal-800 hover:bg-teal-50 shadow-lg hover:shadow-xl transition-all"
+            className="bg-white text-teal-800 hover:bg-teal-50 shadow-lg hover:shadow-xl transition-all mb-8"
           >
             <MessageCircle className="w-4 h-4 mr-2" />
             {WHATSAPP_NUMBER}
           </Button>
-          <p className="text-teal-200 mt-8">جميع الحقوق محفوظة © 2024 - مميز للساعات</p>
+          
+          <div className="flex items-center justify-center gap-4 mb-8">
+            <a href="https://www.facebook.com/mumyazwatchs" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all hover:scale-110">
+              <Facebook className="w-6 h-6" />
+            </a>
+            <a href="https://www.tiktok.com/@mumayyaz_watches" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all hover:scale-110">
+              <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/></svg>
+            </a>
+            <a href="https://chat.whatsapp.com/ISgQOEO5USa4SF3hBEPDYP" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all hover:scale-110">
+              <MessageCircle className="w-6 h-6" />
+            </a>
+            <a href="https://t.me/MUMAYYAZ_WATCHES" target="_blank" rel="noopener noreferrer" className="w-12 h-12 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all hover:scale-110">
+              <Send className="w-6 h-6" />
+            </a>
+          </div>
+          
+          <p className="text-teal-200">جميع الحقوق محفوظة © 2024 - مميز للساعات</p>
         </div>
       </footer>
 
