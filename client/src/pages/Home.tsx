@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
 import { Link } from "wouter";
+import { Input } from "@/components/ui/input";
 
 const WHATSAPP_NUMBER = "905343222221";
 
@@ -12,14 +13,31 @@ export default function Home() {
   const { data: categories } = trpc.categories.list.useQuery();
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const getProductsByCategory = (categoryId: number) => {
     return products?.filter((p) => p.categoryId === categoryId && p.isActive) || [];
   };
 
   const getFilteredProducts = () => {
-    if (selectedCategory === null) return products?.filter(p => p.isActive) || [];
-    return getProductsByCategory(selectedCategory);
+    let filtered = products?.filter(p => p.isActive) || [];
+    
+    // Filter by category
+    if (selectedCategory !== null) {
+      filtered = filtered.filter(p => p.categoryId === selectedCategory);
+    }
+    
+    // Filter by search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(p => 
+        p.nameAr.toLowerCase().includes(query) || 
+        p.name.toLowerCase().includes(query) ||
+        (p.descriptionAr && p.descriptionAr.toLowerCase().includes(query))
+      );
+    }
+    
+    return filtered;
   };
 
   const sendWhatsAppMessage = (product: any) => {
@@ -92,6 +110,17 @@ export default function Home() {
               <img src="/logo.webp" alt="مميز للساعات" className="h-12" />
             </div>
             
+            {/* Search Bar */}
+            <div className="hidden md:block flex-1 max-w-md mx-8">
+              <Input
+                type="search"
+                placeholder="ابحث عن منتج..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full"
+              />
+            </div>
+
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-8">
               {navItems.map((item) => (
@@ -337,6 +366,11 @@ export default function Home() {
                   className="group hover:shadow-2xl transition-all duration-300 border border-gray-200 overflow-hidden hover:border-teal-300"
                 >
                   <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+                    {product.originalPrice && product.originalPrice > product.price && (
+                      <div className="absolute top-2 left-2 z-10 bg-gradient-to-r from-red-600 to-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+                        خصم {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+                      </div>
+                    )}
                     {product.imageUrl ? (
                       <img
                         src={product.imageUrl}
@@ -363,7 +397,14 @@ export default function Home() {
                     </div>
                     
                     <div className="text-center mb-4">
-                      <span className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">${product.price}</span>
+                      {product.originalPrice && product.originalPrice > product.price ? (
+                        <div className="flex flex-col items-center gap-1">
+                          <span className="text-lg text-gray-400 line-through">${product.originalPrice}</span>
+                          <span className="text-3xl font-bold bg-gradient-to-r from-red-600 to-red-500 bg-clip-text text-transparent">${product.price}</span>
+                        </div>
+                      ) : (
+                        <span className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">${product.price}</span>
+                      )}
                     </div>
 
                     {product.descriptionAr && (

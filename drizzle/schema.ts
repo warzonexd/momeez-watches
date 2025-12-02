@@ -50,7 +50,8 @@ export const products = mysqlTable("products", {
   nameAr: varchar("nameAr", { length: 200 }).notNull(),
   description: text("description"),
   descriptionAr: text("descriptionAr"),
-  price: int("price").notNull(), // Price in smallest currency unit (e.g., cents)
+  price: int("price").notNull(), // Current price (after discount if applicable)
+  originalPrice: int("originalPrice"), // Original price before discount (null if no discount)
   imageUrl: text("imageUrl"),
   categoryId: int("categoryId").notNull(),
   rating: int("rating").default(5).notNull(), // Rating out of 5

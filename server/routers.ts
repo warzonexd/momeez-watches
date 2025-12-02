@@ -57,6 +57,7 @@ export const appRouter = router({
           description: z.string().optional(),
           descriptionAr: z.string().optional(),
           price: z.number(),
+          originalPrice: z.number().optional(),
           categoryId: z.number(),
           imageUrl: z.string().optional(),
         })
@@ -76,6 +77,7 @@ export const appRouter = router({
           description: z.string().optional(),
           descriptionAr: z.string().optional(),
           price: z.number().optional(),
+          originalPrice: z.number().optional(),
           categoryId: z.number().optional(),
           imageUrl: z.string().optional(),
           isActive: z.number().optional(),

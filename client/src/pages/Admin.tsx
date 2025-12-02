@@ -142,6 +142,7 @@ export default function Admin() {
   const handleAddProduct = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const originalPriceStr = formData.get("originalPrice") as string;
     
     createMutation.mutate({
       name: formData.get("name") as string,
@@ -149,6 +150,7 @@ export default function Admin() {
       description: formData.get("description") as string,
       descriptionAr: formData.get("descriptionAr") as string,
       price: parseInt(formData.get("price") as string),
+      originalPrice: originalPriceStr ? parseInt(originalPriceStr) : undefined,
       categoryId: parseInt(formData.get("categoryId") as string),
       imageUrl: formData.get("imageUrl") as string,
     });
@@ -157,6 +159,7 @@ export default function Admin() {
   const handleEditProduct = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
+    const originalPriceStr = formData.get("originalPrice") as string;
     
     updateMutation.mutate({
       id: editingProduct.id,
@@ -165,6 +168,7 @@ export default function Admin() {
       description: formData.get("description") as string,
       descriptionAr: formData.get("descriptionAr") as string,
       price: parseInt(formData.get("price") as string),
+      originalPrice: originalPriceStr ? parseInt(originalPriceStr) : undefined,
       categoryId: parseInt(formData.get("categoryId") as string),
       imageUrl: formData.get("imageUrl") as string,
     });
@@ -355,15 +359,25 @@ function ProductForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <div>
-          <Label htmlFor="price">السعر ($)</Label>
+          <Label htmlFor="price">السعر الحالي ($)</Label>
           <Input
             id="price"
             name="price"
             type="number"
             required
             defaultValue={defaultValues?.price}
+          />
+        </div>
+        <div>
+          <Label htmlFor="originalPrice">السعر الأصلي ($) - اختياري</Label>
+          <Input
+            id="originalPrice"
+            name="originalPrice"
+            type="number"
+            placeholder="اتركه فارغاً إذا لم يكن هناك خصم"
+            defaultValue={defaultValues?.originalPrice || ""}
           />
         </div>
         <div>
