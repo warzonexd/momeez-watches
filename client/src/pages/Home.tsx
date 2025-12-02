@@ -1,5 +1,5 @@
 import { trpc } from "@/lib/trpc";
-import { MessageCircle, Clock, Shield, Truck, Sparkles } from "lucide-react";
+import { MessageCircle, Clock, Shield, Truck, Sparkles, Watch, Gem, Smartphone, Crown, Grid3x3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
@@ -27,6 +27,13 @@ export default function Home() {
   };
 
   const totalProducts = products?.filter(p => p.isActive).length || 0;
+
+  const categoryIcons = [
+    { id: 1, name: "ساعات كلاسيكية", icon: Watch, color: "bg-blue-50 border-blue-200 hover:border-blue-500 text-blue-700" },
+    { id: 2, name: "ساعات إسلامية", icon: Clock, color: "bg-purple-50 border-purple-200 hover:border-purple-500 text-purple-700" },
+    { id: 3, name: "ساعات رقمية", icon: Smartphone, color: "bg-green-50 border-green-200 hover:border-green-500 text-green-700" },
+    { id: 4, name: "ساعات نسائية", icon: Gem, color: "bg-pink-50 border-pink-200 hover:border-pink-500 text-pink-700" }
+  ];
 
   return (
     <div className="min-h-screen bg-white">
@@ -123,38 +130,41 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               {
-                icon: <Clock className="w-8 h-8" />,
+                icon: Clock,
                 title: "مواقيت الصلاة الدقيقة",
                 desc: "جميع ساعاتنا مزودة بمواقيت الصلاة المبرمجة مسبقاً لجميع المدن",
                 color: "bg-amber-100 text-amber-700"
               },
               {
-                icon: <Shield className="w-8 h-8" />,
+                icon: Shield,
                 title: "ضمان الجودة",
                 desc: "نقدم ضمان شامل على جميع منتجاتنا مع خدمة ما بعد البيع",
                 color: "bg-rose-100 text-rose-700"
               },
               {
-                icon: <Truck className="w-8 h-8" />,
+                icon: Truck,
                 title: "توصيل سريع",
                 desc: "توصيل مجاني لجميع أنحاء المملكة خلال 3-5 أيام عمل",
                 color: "bg-blue-100 text-blue-700"
               },
               {
-                icon: <Sparkles className="w-8 h-8" />,
+                icon: Sparkles,
                 title: "تصاميم حصرية",
                 desc: "تصاميم إسلامية أنيقة تجمع بين الأصالة والعصرية",
                 color: "bg-purple-100 text-purple-700"
               }
-            ].map((feature, idx) => (
-              <div key={idx} className="text-center">
-                <div className={`w-20 h-20 ${feature.color} rounded-full flex items-center justify-center mx-auto mb-4`}>
-                  {feature.icon}
+            ].map((feature, idx) => {
+              const IconComponent = feature.icon;
+              return (
+                <div key={idx} className="text-center">
+                  <div className={`w-20 h-20 ${feature.color} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                    <IconComponent className="w-10 h-10" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{feature.title}</h3>
+                  <p className="text-gray-600 leading-relaxed">{feature.desc}</p>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{feature.title}</h3>
-                <p className="text-gray-600 leading-relaxed">{feature.desc}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -177,32 +187,30 @@ export default function Home() {
               }`}
             >
               <div className="flex flex-col items-center gap-2">
-                <span className="text-2xl">🔲</span>
+                <Grid3x3 className="w-8 h-8" />
                 <span className="font-semibold">الكل</span>
               </div>
             </button>
 
-            {[
-              { id: 1, name: "ساعات كلاسيكية", icon: "⌚", color: "bg-blue-50 border-blue-200 hover:border-blue-500" },
-              { id: 2, name: "ساعات إسلامية", icon: "🕌", color: "bg-purple-50 border-purple-200 hover:border-purple-500" },
-              { id: 3, name: "ساعات رقمية", icon: "📱", color: "bg-green-50 border-green-200 hover:border-green-500" },
-              { id: 4, name: "ساعات نسائية", icon: "💎", color: "bg-pink-50 border-pink-200 hover:border-pink-500" }
-            ].map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`px-8 py-4 rounded-2xl border-2 transition-all ${
-                  selectedCategory === cat.id
-                    ? "bg-teal-700 text-white border-teal-700 shadow-lg"
-                    : `${cat.color}`
-                }`}
-              >
-                <div className="flex flex-col items-center gap-2">
-                  <span className="text-2xl">{cat.icon}</span>
-                  <span className="font-semibold">{cat.name}</span>
-                </div>
-              </button>
-            ))}
+            {categoryIcons.map((cat) => {
+              const IconComponent = cat.icon;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`px-8 py-4 rounded-2xl border-2 transition-all ${
+                    selectedCategory === cat.id
+                      ? "bg-teal-700 text-white border-teal-700 shadow-lg"
+                      : `${cat.color} bg-white`
+                  }`}
+                >
+                  <div className="flex flex-col items-center gap-2">
+                    <IconComponent className={`w-8 h-8 ${selectedCategory === cat.id ? 'text-white' : ''}`} />
+                    <span className="font-semibold">{cat.name}</span>
+                  </div>
+                </button>
+              );
+            })}
           </div>
 
           {/* Products Grid */}
@@ -234,7 +242,7 @@ export default function Home() {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
-                        <div className="text-8xl opacity-20">⌚</div>
+                        <Watch className="w-24 h-24 text-gray-300" />
                       </div>
                     )}
                   </div>
@@ -272,7 +280,7 @@ export default function Home() {
 
           {getFilteredProducts().length === 0 && !isLoading && (
             <div className="text-center py-20">
-              <div className="text-6xl mb-4">📭</div>
+              <Crown className="w-20 h-20 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-600 text-lg">لا توجد منتجات في هذه الفئة حالياً</p>
             </div>
           )}
