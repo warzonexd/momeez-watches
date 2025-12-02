@@ -11,9 +11,11 @@ import {
   Truck, 
   Clock,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  ZoomIn
 } from "lucide-react";
 import { useState } from "react";
+import ImageLightbox from "@/components/ImageLightbox";
 
 const WHATSAPP_NUMBER = "905343222221";
 
@@ -31,6 +33,7 @@ export default function ProductDetails() {
   const { data: allProducts } = trpc.products.list.useQuery();
 
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   if (isLoading) {
     return (
@@ -84,12 +87,19 @@ export default function ProductDetails() {
     window.open(url, "_blank");
   };
 
-  const nextImage = () => {
+  const nextImage = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     setSelectedImageIndex((prev) => (prev + 1) % allImages.length);
   };
 
-  const prevImage = () => {
+  const prevImage = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     setSelectedImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+  };
+
+  const openLightbox = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setIsLightboxOpen(true);
   };
 
   return (
@@ -123,18 +133,23 @@ export default function ProductDetails() {
           {/* Image Gallery */}
           <div className="space-y-4">
             {/* Main Image */}
-            <div className="relative aspect-square bg-white rounded-2xl shadow-xl overflow-hidden group">
+            <div className="relative aspect-square bg-white rounded-2xl shadow-xl overflow-hidden group cursor-pointer" onClick={openLightbox}>
               {product.originalPrice && product.originalPrice > product.price && (
                 <div className="absolute top-4 left-4 z-10 bg-gradient-to-r from-red-600 to-red-500 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg">
                   خصم {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
                 </div>
               )}
 
+              {/* Zoom Button */}
+              <div className="absolute top-4 right-4 z-10 bg-white/90 hover:bg-white text-gray-800 p-3 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+                <ZoomIn className="w-5 h-5" />
+              </div>
+
               {currentImage?.imageUrl ? (
                 <img
                   src={currentImage.imageUrl}
                   alt={product.nameAr}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center bg-gray-100">
@@ -145,14 +160,20 @@ export default function ProductDetails() {
               {allImages.length > 1 && (
                 <>
                   <button
-                    onClick={prevImage}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      prevImage();
+                    }}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-20"
                   >
                     <ChevronRight className="w-6 h-6 text-gray-800" />
                   </button>
                   <button
-                    onClick={nextImage}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      nextImage();
+                    }}
+                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-3 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-20"
                   >
                     <ChevronLeft className="w-6 h-6 text-gray-800" />
                   </button>
@@ -166,8 +187,11 @@ export default function ProductDetails() {
                 {allImages.map((img, index) => (
                   <button
                     key={img.id}
-                    onClick={() => setSelectedImageIndex(index)}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedImageIndex(index);
+                    }}
+                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
                       index === selectedImageIndex
                         ? "border-teal-600 ring-2 ring-teal-300"
                         : "border-gray-200 hover:border-teal-400"
@@ -182,6 +206,13 @@ export default function ProductDetails() {
                 ))}
               </div>
             )}
+
+            <ImageLightbox
+              images={allImages}
+              initialIndex={selectedImageIndex}
+              isOpen={isLightboxOpen}
+              onClose={() => setIsLightboxOpen(false)}
+            />
           </div>
 
           {/* Product Info */}

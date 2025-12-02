@@ -1,10 +1,11 @@
 import { trpc } from "@/lib/trpc";
-import { MessageCircle, Clock, Shield, Truck, Sparkles, Watch, Gem, Smartphone, Crown, LayoutGrid, Menu, X, Sparkle, Star, Facebook, Send, ChevronLeft, ChevronRight } from "lucide-react";
+import { MessageCircle, Clock, Shield, Truck, Sparkles, Watch, Gem, Smartphone, Crown, LayoutGrid, Menu, X, Sparkle, Star, Facebook, Send, ChevronLeft, ChevronRight, ZoomIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
 import { Link } from "wouter";
 import { Input } from "@/components/ui/input";
+import ImageLightbox from "@/components/ImageLightbox";
 
 const WHATSAPP_NUMBER = "905343222221";
 
@@ -499,6 +500,8 @@ export default function Home() {
 
 function ProductImageGallery({ product }: { product: any }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  
   const { data: productImages } = trpc.productImages.getByProduct.useQuery(
     { productId: product.id },
     { enabled: !!product.id }
@@ -512,54 +515,65 @@ function ProductImageGallery({ product }: { product: any }) {
 
   const hasMultipleImages = allImages.length > 1;
 
-  const nextImage = () => {
+  const nextImage = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
   };
 
-  const prevImage = () => {
+  const prevImage = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+  };
+
+  const openLightbox = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsLightboxOpen(true);
   };
 
   const currentImage = allImages[currentImageIndex];
 
   return (
-    <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 group">
-      {product.originalPrice && product.originalPrice > product.price && (
-        <div className="absolute top-2 left-2 z-10 bg-gradient-to-r from-red-600 to-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
-          خصم {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
-        </div>
-      )}
+    <>
+      <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 group">
+        {product.originalPrice && product.originalPrice > product.price && (
+          <div className="absolute top-2 left-2 z-10 bg-gradient-to-r from-red-600 to-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+            خصم {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+          </div>
+        )}
 
-      {currentImage?.imageUrl ? (
-        <img
-          src={currentImage.imageUrl}
-          alt={product.nameAr}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-        />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center">
-          <Watch className="w-24 h-24 text-gray-300" />
-        </div>
-      )}
+        {/* Zoom Button */}
+        <button
+          onClick={openLightbox}
+          className="absolute top-2 right-2 z-10 bg-white/80 hover:bg-white text-gray-800 p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg"
+          aria-label="تكبير الصورة"
+        >
+          <ZoomIn className="w-4 h-4" />
+        </button>
+
+        {currentImage?.imageUrl ? (
+          <img
+            src={currentImage.imageUrl}
+            alt={product.nameAr}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <Watch className="w-24 h-24 text-gray-300" />
+          </div>
+        )}
 
       {hasMultipleImages && (
         <>
           {/* Navigation Arrows */}
           <button
-            onClick={(e) => {
-              e.preventDefault();
-              prevImage();
-            }}
+            onClick={prevImage}
             className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
             aria-label="الصورة السابقة"
           >
             <ChevronRight className="w-5 h-5 text-gray-800" />
           </button>
           <button
-            onClick={(e) => {
-              e.preventDefault();
-              nextImage();
-            }}
+            onClick={nextImage}
             className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
             aria-label="الصورة التالية"
           >
@@ -586,6 +600,14 @@ function ProductImageGallery({ product }: { product: any }) {
           </div>
         </>
       )}
-    </div>
+      </div>
+
+      <ImageLightbox
+        images={allImages}
+        initialIndex={currentImageIndex}
+        isOpen={isLightboxOpen}
+        onClose={() => setIsLightboxOpen(false)}
+      />
+    </>
   );
 }

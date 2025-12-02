@@ -214,6 +214,7 @@ export default function Admin() {
                   onSubmit={handleAddProduct}
                   categories={categories || []}
                   onImageUpload={handleImageUpload}
+                  uploadImageMutation={uploadImageMutation}
                   isLoading={createMutation.isPending}
                 />
               </DialogContent>
@@ -385,6 +386,7 @@ export default function Admin() {
                 onSubmit={handleEditProduct}
                 categories={categories || []}
                 onImageUpload={handleImageUpload}
+                uploadImageMutation={uploadImageMutation}
                 isLoading={updateMutation.isPending}
                 initialData={editingProduct}
               />
@@ -400,12 +402,14 @@ function ProductForm({
   onSubmit,
   categories,
   onImageUpload,
+  uploadImageMutation,
   isLoading,
   initialData,
 }: {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   categories: any[];
   onImageUpload: (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => void;
+  uploadImageMutation: any;
   isLoading: boolean;
   initialData?: any;
 }) {
@@ -417,9 +421,15 @@ function ProductForm({
     { enabled: !!initialData?.id }
   );
 
+  const utils = trpc.useContext();
+  
   const createImageMutation = trpc.productImages.create.useMutation({
     onSuccess: () => {
       toast.success("تم إضافة الصورة بنجاح");
+      // Refetch images to update the list
+      if (initialData?.id) {
+        utils.productImages.getByProduct.invalidate({ productId: initialData.id });
+      }
     },
     onError: (error) => {
       toast.error("فشل في إضافة الصورة: " + error.message);
@@ -429,6 +439,10 @@ function ProductForm({
   const deleteImageMutation = trpc.productImages.delete.useMutation({
     onSuccess: () => {
       toast.success("تم حذف الصورة بنجاح");
+      // Refetch images to update the list
+      if (initialData?.id) {
+        utils.productImages.getByProduct.invalidate({ productId: initialData.id });
+      }
     },
     onError: (error) => {
       toast.error("فشل في حذف الصورة: " + error.message);
@@ -448,8 +462,8 @@ function ProductForm({
     reader.onloadend = async () => {
       const base64Data = reader.result as string;
       try {
-        const uploadMutation = trpc.products.uploadImage.useMutation();
-        const result = await uploadMutation.mutateAsync({
+        // Upload image first
+        const result = await uploadImageMutation.mutateAsync({
           base64Data,
           mimeType: file.type,
         });
@@ -464,9 +478,8 @@ function ProductForm({
         } else {
           // If new product, just add to temporary array
           setAdditionalImages([...additionalImages, result.url]);
+          toast.success("تم رفع الصورة بنجاح");
         }
-        
-        toast.success("تم رفع الصورة بنجاح");
       } catch (error) {
         toast.error("فشل في رفع الصورة");
       }
