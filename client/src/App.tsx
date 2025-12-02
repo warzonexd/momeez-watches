@@ -10,7 +10,6 @@ import Settings from "./pages/Settings";
 import AdminLogin from "./pages/AdminLogin";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Home} />
