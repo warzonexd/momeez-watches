@@ -41,29 +41,11 @@ export default function Admin() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
 
-  useEffect(() => {
-    // Check simple authentication
-    const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
-    if (!isLoggedIn) {
-      setLocation("/admin-login");
-    } else {
-      setIsSimpleAuthChecked(true);
-    }
-  }, [setLocation]);
-
-  if (!isSimpleAuthChecked) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    );
-  }
-
-  // Fetch data
+  // Fetch data - MUST be before any conditional returns
   const { data: products, isLoading: productsLoading, refetch: refetchProducts } = trpc.products.list.useQuery();
   const { data: categories, isLoading: categoriesLoading } = trpc.categories.list.useQuery();
 
-  // Mutations
+  // Mutations - MUST be before any conditional returns
   const createMutation = trpc.products.create.useMutation({
     onSuccess: () => {
       toast.success("تم إضافة المنتج بنجاح");
@@ -103,8 +85,18 @@ export default function Admin() {
     },
   });
 
-  // Check if user is admin
-  if (authLoading) {
+  // Check authentication - useEffect AFTER all hooks
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
+    if (!isLoggedIn) {
+      setLocation("/admin-login");
+    } else {
+      setIsSimpleAuthChecked(true);
+    }
+  }, [setLocation]);
+
+  // Conditional returns AFTER all hooks
+  if (!isSimpleAuthChecked || authLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="w-8 h-8 animate-spin" />
