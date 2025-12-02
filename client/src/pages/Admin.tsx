@@ -1,4 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useLocation } from "wouter";
+import { useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +35,26 @@ import { toast } from "sonner";
 
 export default function Admin() {
   const { user, loading: authLoading } = useAuth();
+  const [, setLocation] = useLocation();
+  const [isSimpleAuthChecked, setIsSimpleAuthChecked] = useState(false);
+
+  useEffect(() => {
+    // Check simple authentication
+    const isLoggedIn = localStorage.getItem("adminLoggedIn") === "true";
+    if (!isLoggedIn) {
+      setLocation("/admin-login");
+    } else {
+      setIsSimpleAuthChecked(true);
+    }
+  }, [setLocation]);
+
+  if (!isSimpleAuthChecked) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    );
+  }
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
@@ -90,16 +112,10 @@ export default function Admin() {
     );
   }
 
-  if (!user || user.role !== "admin") {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-2">غير مصرح</h1>
-          <p className="text-muted-foreground">ليس لديك صلاحية للوصول إلى هذه الصفحة</p>
-        </div>
-      </div>
-    );
-  }
+  const handleLogout = () => {
+    localStorage.removeItem("adminLoggedIn");
+    setLocation("/admin-login");
+  };
 
   const handleImageUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -178,7 +194,11 @@ export default function Admin() {
       <div className="container py-8">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">إدارة المنتجات</h1>
-          <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleLogout}>
+              تسجيل الخروج
+            </Button>
+            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="w-4 h-4 ml-2" />
@@ -197,6 +217,7 @@ export default function Admin() {
               />
             </DialogContent>
           </Dialog>
+          </div>
         </div>
 
         {productsLoading || categoriesLoading ? (
@@ -233,7 +254,7 @@ export default function Admin() {
                     </TableCell>
                     <TableCell className="font-medium">{product.nameAr}</TableCell>
                     <TableCell>{getCategoryName(product.categoryId)}</TableCell>
-                    <TableCell>{product.price} ريال</TableCell>
+                    <TableCell>${product.price}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
                         <Button
@@ -344,7 +365,7 @@ function ProductForm({
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="price">السعر (ريال)</Label>
+          <Label htmlFor="price">السعر ($)</Label>
           <Input
             id="price"
             name="price"
