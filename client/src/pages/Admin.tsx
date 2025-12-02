@@ -123,6 +123,8 @@ export default function Admin() {
       return;
     }
 
+    toast.info("جاري رفع الصورة...");
+
     const reader = new FileReader();
     reader.onloadend = async () => {
       const base64Data = reader.result as string;
@@ -133,30 +135,56 @@ export default function Admin() {
         });
         callback(result.url);
         toast.success("تم رفع الصورة بنجاح");
-      } catch (error) {
-        // Error already handled by mutation
+      } catch (error: any) {
+        console.error("Image upload error:", error);
+        toast.error("فشل في رفع الصورة: " + (error?.message || "خطأ غير معروف"));
       }
+    };
+    reader.onerror = () => {
+      toast.error("فشل في قراءة الملف");
     };
     reader.readAsDataURL(file);
   };
 
-  const handleAddProduct = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleAddProduct = async (e: React.FormEvent<HTMLFormElement>, additionalImages?: string[]) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const originalPriceStr = formData.get("originalPrice") as string;
     const productCodeStr = formData.get("productCode") as string;
+    const imageUrl = formData.get("imageUrl") as string;
     
-    createMutation.mutate({
-      productCode: productCodeStr || undefined,
-      name: formData.get("name") as string,
-      nameAr: formData.get("nameAr") as string,
-      description: formData.get("description") as string,
-      descriptionAr: formData.get("descriptionAr") as string,
-      price: parseInt(formData.get("price") as string),
-      originalPrice: originalPriceStr ? parseInt(originalPriceStr) : undefined,
-      categoryId: parseInt(formData.get("categoryId") as string),
-      imageUrl: formData.get("imageUrl") as string,
-    });
+    if (!imageUrl) {
+      toast.error("يجب رفع صورة رئيسية للمنتج");
+      return;
+    }
+    
+    try {
+      const newProduct = await createMutation.mutateAsync({
+        productCode: productCodeStr || undefined,
+        name: formData.get("name") as string,
+        nameAr: formData.get("nameAr") as string,
+        description: formData.get("description") as string,
+        descriptionAr: formData.get("descriptionAr") as string,
+        price: parseInt(formData.get("price") as string),
+        originalPrice: originalPriceStr ? parseInt(originalPriceStr) : undefined,
+        categoryId: parseInt(formData.get("categoryId") as string),
+        imageUrl: imageUrl,
+      });
+      
+      // Save additional images if any
+      if (additionalImages && additionalImages.length > 0 && newProduct && 'id' in newProduct) {
+        const createImageMutation = trpc.productImages.create.useMutation();
+        for (let i = 0; i < additionalImages.length; i++) {
+          await createImageMutation.mutateAsync({
+            productId: (newProduct as any).id,
+            imageUrl: additionalImages[i],
+            displayOrder: i + 1,
+          });
+        }
+      }
+    } catch (error) {
+      // Error already handled by mutation
+    }
   };
 
   const handleEditProduct = (e: React.FormEvent<HTMLFormElement>) => {
@@ -406,7 +434,7 @@ function ProductForm({
   isLoading,
   initialData,
 }: {
-  onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  onSubmit: (e: React.FormEvent<HTMLFormElement>, additionalImages?: string[]) => void;
   categories: any[];
   onImageUpload: (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => void;
   uploadImageMutation: any;
@@ -493,8 +521,12 @@ function ProductForm({
     }
   };
 
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    onSubmit(e, additionalImages);
+  };
+
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div>
         <Label htmlFor="productCode">كود المنتج (اختياري)</Label>
         <Input
@@ -607,45 +639,68 @@ function ProductForm({
         <input type="hidden" name="imageUrl" value={imageUrl} />
       </div>
 
-      {initialData?.id && (
-        <div>
-          <Label>صور إضافية</Label>
-          <div className="mt-2 grid grid-cols-3 md:grid-cols-4 gap-4">
-            {existingImages?.map((img) => (
-              <div key={img.id} className="relative group">
-                <img
-                  src={img.imageUrl}
-                  alt="Product"
-                  className="w-full h-24 object-cover rounded"
-                />
-                <Button
-                  type="button"
-                  variant="destructive"
-                  size="sm"
-                  className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={() => handleDeleteImage(img.id)}
-                >
-                  <X className="w-3 h-3" />
-                </Button>
-                {img.isPrimary === 1 && (
-                  <div className="absolute bottom-1 right-1 bg-yellow-500 text-white text-xs px-2 py-1 rounded">
-                    <Star className="w-3 h-3" />
-                  </div>
-                )}
-              </div>
-            ))}
-            <label className="border-2 border-dashed rounded flex items-center justify-center h-24 cursor-pointer hover:bg-muted/50 transition-colors">
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleAdditionalImageUpload}
+      <div>
+        <Label>صور إضافية (اختياري)</Label>
+        <div className="mt-2 grid grid-cols-3 md:grid-cols-4 gap-4">
+          {initialData?.id && existingImages?.map((img) => (
+            <div key={img.id} className="relative group">
+              <img
+                src={img.imageUrl}
+                alt="Product"
+                className="w-full h-24 object-cover rounded"
               />
-              <ImageIcon className="w-8 h-8 text-muted-foreground" />
-            </label>
-          </div>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => handleDeleteImage(img.id)}
+              >
+                <X className="w-3 h-3" />
+              </Button>
+              {img.isPrimary === 1 && (
+                <div className="absolute bottom-1 right-1 bg-yellow-500 text-white text-xs px-2 py-1 rounded">
+                  <Star className="w-3 h-3" />
+                </div>
+              )}
+            </div>
+          ))}
+          
+          {additionalImages.map((url, index) => (
+            <div key={`temp-${index}`} className="relative group">
+              <img
+                src={url}
+                alt="Additional"
+                className="w-full h-24 object-cover rounded"
+              />
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => {
+                  setAdditionalImages(additionalImages.filter((_, i) => i !== index));
+                }}
+              >
+                <X className="w-3 h-3" />
+              </Button>
+            </div>
+          ))}
+          
+          <label className="border-2 border-dashed rounded flex items-center justify-center h-24 cursor-pointer hover:bg-muted/50 transition-colors">
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleAdditionalImageUpload}
+            />
+            <ImageIcon className="w-8 h-8 text-muted-foreground" />
+          </label>
         </div>
-      )}
+        <p className="text-xs text-muted-foreground mt-2">
+          يمكنك إضافة صور متعددة للمنتج
+        </p>
+      </div>
 
       <Button type="submit" disabled={isLoading} className="w-full">
         {isLoading ? (

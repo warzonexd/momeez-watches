@@ -134,6 +134,13 @@ export async function createProduct(product: InsertProduct) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   const result = await db.insert(products).values(product);
+  // Get the inserted product ID from result
+  const insertId = (result as any).insertId;
+  if (insertId) {
+    // Fetch and return the newly created product
+    const newProduct = await db.select().from(products).where(eq(products.id, insertId)).limit(1);
+    return newProduct[0];
+  }
   return result;
 }
 
