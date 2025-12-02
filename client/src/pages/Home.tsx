@@ -428,6 +428,17 @@ export default function Home() {
         </div>
       </footer>
 
+      {/* Floating WhatsApp Button */}
+      <a
+        href={`https://wa.me/${WHATSAPP_NUMBER}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 left-6 z-50 w-16 h-16 bg-green-500 hover:bg-green-600 rounded-full flex items-center justify-center shadow-2xl hover:shadow-3xl transition-all hover:scale-110 animate-bounce"
+        aria-label="تواصل عبر واتساب"
+      >
+        <MessageCircle className="w-8 h-8 text-white" />
+      </a>
+
       {/* SVG Gradients for Icons */}
       <svg width="0" height="0" style={{position: 'absolute'}}>
         <defs>
