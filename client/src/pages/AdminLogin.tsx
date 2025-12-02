@@ -34,9 +34,7 @@ export default function AdminLogin() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-green-700 rounded-full flex items-center justify-center">
-              <Watch className="w-10 h-10 text-white" />
-            </div>
+            <img src="/logo.webp" alt="مميز للساعات" className="h-24" />
           </div>
           <CardTitle className="text-2xl">لوحة التحكم</CardTitle>
           <CardDescription>مميز للساعات - تسجيل الدخول</CardDescription>

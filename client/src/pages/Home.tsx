@@ -29,11 +29,7 @@ export default function Home() {
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Watch className="w-10 h-10" />
-              <div>
-                <h1 className="text-3xl font-bold">مميز للساعات</h1>
-                <p className="text-green-100 text-sm">أفخم تشكيلة ساعات في المملكة</p>
-              </div>
+              <img src="/logo.webp" alt="مميز للساعات" className="h-16" />
             </div>
             <a href="/admin-login" className="text-sm hover:underline">
               لوحة التحكم
@@ -152,8 +148,7 @@ export default function Home() {
       <footer className="bg-green-900 text-white py-8 mt-20">
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
-            <Watch className="w-6 h-6" />
-            <span className="text-xl font-bold">مميز للساعات</span>
+            <img src="/logo.webp" alt="مميز للساعات" className="h-12" />
           </div>
           <p className="text-green-200">جميع الحقوق محفوظة © 2024</p>
         </div>
