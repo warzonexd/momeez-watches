@@ -8,8 +8,9 @@ import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import Settings from "./pages/Settings";
 import AdminLogin from "./pages/AdminLogin";
-import About from "./pages/About";
 import FAQ from "./pages/FAQ";
+import About from "./pages/About";
+import Users from "./pages/Users";
 
 function Router() {
   return (
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/about" component={About} />
       <Route path="/faq" component={FAQ} />
+      <Route path="/users" component={Users} />
       <Route path="/settings" component={Settings} />
       <Route path="/404" component={NotFound} />
       {/* Final fallback route */}
