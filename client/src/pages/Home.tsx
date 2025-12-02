@@ -1,5 +1,5 @@
 import { trpc } from "@/lib/trpc";
-import { MessageCircle, Clock, Shield, Truck, Sparkles, Watch, Gem, Smartphone, Crown, LayoutGrid } from "lucide-react";
+import { MessageCircle, Clock, Shield, Truck, Sparkles, Watch, Gem, Smartphone, Crown, LayoutGrid, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
@@ -10,6 +10,7 @@ export default function Home() {
   const { data: products, isLoading } = trpc.products.list.useQuery();
   const { data: categories } = trpc.categories.list.useQuery();
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const getProductsByCategory = (categoryId: number) => {
     return products?.filter((p) => p.categoryId === categoryId && p.isActive) || [];
@@ -21,7 +22,7 @@ export default function Home() {
   };
 
   const sendWhatsAppMessage = (product: any) => {
-    const message = `مرحباً، أرغب في الاستفسار عن:\n\n📦 ${product.name}\n💵 السعر: $${product.price}\n📝 الوصف: ${product.description}`;
+    const message = `مرحباً، أرغب في الاستفسار عن:\n\n📦 ${product.nameAr}\n💵 السعر: $${product.price}\n📝 الوصف: ${product.descriptionAr}`;
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");
   };
@@ -63,6 +64,13 @@ export default function Home() {
     }
   ];
 
+  const navItems = [
+    { href: "#", label: "الرئيسية", active: true },
+    { href: "#features", label: "المميزات", active: false },
+    { href: "#products", label: "المنتجات", active: false },
+    { href: "#contact", label: "اتصل بنا", active: false }
+  ];
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -72,29 +80,58 @@ export default function Home() {
             <div className="flex items-center gap-3">
               <img src="/logo.webp" alt="مميز للساعات" className="h-12" />
             </div>
+            
+            {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-8">
-              <a href="#" className="text-teal-700 font-semibold hover:text-teal-900 transition-colors">
-                الرئيسية
-              </a>
-              <a href="#features" className="text-gray-700 hover:text-teal-700 transition-colors">
-                المميزات
-              </a>
-              <a href="#products" className="text-gray-700 hover:text-teal-700 transition-colors">
-                المنتجات
-              </a>
-              <a href="#contact" className="text-gray-700 hover:text-teal-700 transition-colors">
-                اتصل بنا
-              </a>
+              {navItems.map((item) => (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  className={item.active ? "text-teal-700 font-semibold hover:text-teal-900 transition-colors" : "text-gray-700 hover:text-teal-700 transition-colors"}
+                >
+                  {item.label}
+                </a>
+              ))}
             </nav>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            >
+              {isMobileMenuOpen ? (
+                <X className="w-6 h-6 text-gray-700" />
+              ) : (
+                <Menu className="w-6 h-6 text-gray-700" />
+              )}
+            </button>
           </div>
+
+          {/* Mobile Navigation Menu */}
+          {isMobileMenuOpen && (
+            <nav className="md:hidden mt-4 pb-4 border-t border-gray-200 pt-4">
+              <div className="flex flex-col gap-4">
+                {navItems.map((item) => (
+                  <a
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={item.active ? "text-teal-700 font-semibold text-lg" : "text-gray-700 text-lg hover:text-teal-700 transition-colors"}
+                  >
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+            </nav>
+          )}
         </div>
       </header>
 
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 py-20 overflow-hidden">
         <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-20 right-20 w-72 h-72 bg-teal-200 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 left-20 w-96 h-96 bg-amber-200 rounded-full blur-3xl"></div>
+          <div className="absolute top-20 left-20 w-72 h-72 bg-teal-200 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-amber-200 rounded-full blur-3xl"></div>
         </div>
         
         <div className="container mx-auto px-4 relative z-10">
@@ -107,7 +144,7 @@ export default function Home() {
               <p className="text-xl text-gray-700 mb-8 leading-relaxed">
                 اكتشف مجموعتنا الفريدة من الساعات الإسلامية الفاخرة مع مواقيت الصلاة والتصاميم الأنيقة التي تجمع بين الأصالة والحداثة
               </p>
-              <div className="flex flex-wrap gap-4 justify-center md:justify-end">
+              <div className="flex flex-wrap gap-4 justify-center md:justify-start">
                 <Button
                   onClick={() => document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })}
                   size="lg"
@@ -137,7 +174,7 @@ export default function Home() {
               </div>
               
               {/* Floating Badge */}
-              <div className="absolute -bottom-6 -right-6 bg-gradient-to-br from-teal-700 to-teal-600 text-white rounded-full w-32 h-32 flex flex-col items-center justify-center shadow-2xl ring-4 ring-white">
+              <div className="absolute -bottom-6 -left-6 bg-gradient-to-br from-teal-700 to-teal-600 text-white rounded-full w-32 h-32 flex flex-col items-center justify-center shadow-2xl ring-4 ring-white">
                 <div className="text-4xl font-bold">+{totalProducts}</div>
                 <div className="text-sm">موديل متنوع</div>
               </div>
@@ -273,7 +310,7 @@ export default function Home() {
                     {product.imageUrl ? (
                       <img
                         src={product.imageUrl}
-                        alt={product.name}
+                        alt={product.nameAr}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
                     ) : (
@@ -284,21 +321,21 @@ export default function Home() {
                   </div>
 
                   <CardContent className="p-6">
-                    <h3 className="font-bold text-xl text-gray-900 mb-3 text-center line-clamp-1">{product.name}</h3>
+                    <h3 className="font-bold text-xl text-gray-900 mb-3 text-center line-clamp-1">{product.nameAr}</h3>
                     
                     <div className="text-center mb-4">
                       <span className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">${product.price}</span>
                     </div>
 
-                    {product.description && (
-                      <p className="text-sm text-gray-600 mb-4 text-center line-clamp-2">{product.description}</p>
+                    {product.descriptionAr && (
+                      <p className="text-sm text-gray-600 mb-4 text-center line-clamp-2">{product.descriptionAr}</p>
                     )}
 
                     <Button
                       onClick={() => sendWhatsAppMessage(product)}
                       className="w-full bg-gradient-to-r from-teal-700 to-teal-600 hover:from-teal-800 hover:to-teal-700 text-white shadow-md hover:shadow-lg transition-all"
                     >
-                      <MessageCircle className="w-4 h-4 ml-2" />
+                      <MessageCircle className="w-4 h-4 mr-2" />
                       اطلب عبر واتساب
                     </Button>
                   </CardContent>
@@ -329,7 +366,7 @@ export default function Home() {
             onClick={() => window.open(`https://wa.me/${WHATSAPP_NUMBER}`, "_blank")}
             className="bg-white text-teal-800 hover:bg-teal-50 shadow-lg hover:shadow-xl transition-all"
           >
-            <MessageCircle className="w-4 h-4 ml-2" />
+            <MessageCircle className="w-4 h-4 mr-2" />
             {WHATSAPP_NUMBER}
           </Button>
           <p className="text-teal-200 mt-8">جميع الحقوق محفوظة © 2024 - مميز للساعات</p>
