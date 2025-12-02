@@ -27,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { Loader2, Pencil, Plus, Trash2 } from "lucide-react";
@@ -187,32 +188,32 @@ export default function Admin() {
 
   return (
     <DashboardLayout>
-      <div className="container py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">إدارة المنتجات</h1>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={handleLogout}>
+      <div className="container py-4 md:py-8">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <h1 className="text-2xl md:text-3xl font-bold">إدارة المنتجات</h1>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <Button variant="outline" onClick={handleLogout} className="flex-1 sm:flex-none">
               تسجيل الخروج
             </Button>
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="w-4 h-4 ml-2" />
-                إضافة منتج جديد
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>إضافة منتج جديد</DialogTitle>
-              </DialogHeader>
-              <ProductForm
-                onSubmit={handleAddProduct}
-                categories={categories || []}
-                onImageUpload={handleImageUpload}
-                isLoading={createMutation.isPending}
-              />
-            </DialogContent>
-          </Dialog>
+              <DialogTrigger asChild>
+                <Button className="flex-1 sm:flex-none">
+                  <Plus className="w-4 h-4 ml-2" />
+                  إضافة منتج
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>إضافة منتج جديد</DialogTitle>
+                </DialogHeader>
+                <ProductForm
+                  onSubmit={handleAddProduct}
+                  categories={categories || []}
+                  onImageUpload={handleImageUpload}
+                  isLoading={createMutation.isPending}
+                />
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
@@ -221,80 +222,162 @@ export default function Admin() {
             <Loader2 className="w-8 h-8 animate-spin" />
           </div>
         ) : (
-          <div className="border rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>الصورة</TableHead>
-                  <TableHead>الاسم</TableHead>
-                  <TableHead>الفئة</TableHead>
-                  <TableHead>السعر</TableHead>
-                  <TableHead>الإجراءات</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {products?.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell>
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block border rounded-lg overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>الصورة</TableHead>
+                    <TableHead>الاسم</TableHead>
+                    <TableHead>الفئة</TableHead>
+                    <TableHead>السعر</TableHead>
+                    <TableHead>الإجراءات</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {products?.map((product) => (
+                    <TableRow key={product.id}>
+                      <TableCell>
+                        {product.imageUrl ? (
+                          <img
+                            src={product.imageUrl}
+                            alt={product.nameAr}
+                            className="w-16 h-16 object-cover rounded"
+                          />
+                        ) : (
+                          <div className="w-16 h-16 bg-muted rounded flex items-center justify-center text-xs">
+                            لا توجد صورة
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className="font-medium">{product.nameAr}</TableCell>
+                      <TableCell>{getCategoryName(product.categoryId)}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col gap-1">
+                          {product.originalPrice && product.originalPrice > product.price ? (
+                            <>
+                              <span className="text-sm line-through text-muted-foreground">
+                                ${product.originalPrice}
+                              </span>
+                              <span className="font-semibold text-red-600">
+                                ${product.price}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="font-semibold">${product.price}</span>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setEditingProduct(product);
+                              setIsEditDialogOpen(true);
+                            }}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(product.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-4">
+              {products?.map((product) => (
+                <Card key={product.id}>
+                  <CardContent className="p-4">
+                    <div className="flex gap-4">
                       {product.imageUrl ? (
                         <img
                           src={product.imageUrl}
                           alt={product.nameAr}
-                          className="w-16 h-16 object-cover rounded"
+                          className="w-20 h-20 object-cover rounded flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-16 h-16 bg-muted rounded flex items-center justify-center text-xs">
+                        <div className="w-20 h-20 bg-muted rounded flex items-center justify-center text-xs flex-shrink-0">
                           لا توجد صورة
                         </div>
                       )}
-                    </TableCell>
-                    <TableCell className="font-medium">{product.nameAr}</TableCell>
-                    <TableCell>{getCategoryName(product.categoryId)}</TableCell>
-                    <TableCell>${product.price}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setEditingProduct(product);
-                            setIsEditDialogOpen(true);
-                          }}
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDelete(product.id)}
-                        >
-                          <Trash2 className="w-4 h-4 text-destructive" />
-                        </Button>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-lg truncate">{product.nameAr}</h3>
+                        <p className="text-sm text-muted-foreground">{getCategoryName(product.categoryId)}</p>
+                        <div className="mt-2">
+                          {product.originalPrice && product.originalPrice > product.price ? (
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm line-through text-muted-foreground">
+                                ${product.originalPrice}
+                              </span>
+                              <span className="font-semibold text-red-600">
+                                ${product.price}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="font-semibold">${product.price}</span>
+                          )}
+                        </div>
+                        <div className="flex gap-2 mt-3">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setEditingProduct(product);
+                              setIsEditDialogOpen(true);
+                            }}
+                            className="flex-1"
+                          >
+                            <Pencil className="w-4 h-4 ml-1" />
+                            تعديل
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(product.id)}
+                            className="flex-1"
+                          >
+                            <Trash2 className="w-4 h-4 ml-1" />
+                            حذف
+                          </Button>
+                        </div>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </>
         )}
 
-        {editingProduct && (
-          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>تعديل المنتج</DialogTitle>
-              </DialogHeader>
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>تعديل المنتج</DialogTitle>
+            </DialogHeader>
+            {editingProduct && (
               <ProductForm
                 onSubmit={handleEditProduct}
                 categories={categories || []}
                 onImageUpload={handleImageUpload}
                 isLoading={updateMutation.isPending}
-                defaultValues={editingProduct}
+                initialData={editingProduct}
               />
-            </DialogContent>
-          </Dialog>
-        )}
+            )}
+          </DialogContent>
+        </Dialog>
       </div>
     </DashboardLayout>
   );
@@ -305,61 +388,61 @@ function ProductForm({
   categories,
   onImageUpload,
   isLoading,
-  defaultValues,
+  initialData,
 }: {
   onSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
   categories: any[];
   onImageUpload: (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => void;
   isLoading: boolean;
-  defaultValues?: any;
+  initialData?: any;
 }) {
-  const [imageUrl, setImageUrl] = useState(defaultValues?.imageUrl || "");
+  const [imageUrl, setImageUrl] = useState(initialData?.imageUrl || "");
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <input type="hidden" name="imageUrl" value={imageUrl} />
-      
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="nameAr">الاسم بالعربية</Label>
-          <Input
-            id="nameAr"
-            name="nameAr"
-            required
-            defaultValue={defaultValues?.nameAr}
-          />
-        </div>
-        <div>
-          <Label htmlFor="name">الاسم بالإنجليزية</Label>
+          <Label htmlFor="name">الاسم (English)</Label>
           <Input
             id="name"
             name="name"
             required
-            defaultValue={defaultValues?.name}
+            defaultValue={initialData?.name}
+          />
+        </div>
+        <div>
+          <Label htmlFor="nameAr">الاسم (عربي)</Label>
+          <Input
+            id="nameAr"
+            name="nameAr"
+            required
+            defaultValue={initialData?.nameAr}
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="descriptionAr">الوصف بالعربية</Label>
-          <Textarea
-            id="descriptionAr"
-            name="descriptionAr"
-            defaultValue={defaultValues?.descriptionAr}
-          />
-        </div>
-        <div>
-          <Label htmlFor="description">الوصف بالإنجليزية</Label>
+          <Label htmlFor="description">الوصف (English)</Label>
           <Textarea
             id="description"
             name="description"
-            defaultValue={defaultValues?.description}
+            required
+            defaultValue={initialData?.description}
+          />
+        </div>
+        <div>
+          <Label htmlFor="descriptionAr">الوصف (عربي)</Label>
+          <Textarea
+            id="descriptionAr"
+            name="descriptionAr"
+            required
+            defaultValue={initialData?.descriptionAr}
           />
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
           <Label htmlFor="price">السعر الحالي ($)</Label>
           <Input
@@ -367,22 +450,21 @@ function ProductForm({
             name="price"
             type="number"
             required
-            defaultValue={defaultValues?.price}
+            defaultValue={initialData?.price}
           />
         </div>
         <div>
-          <Label htmlFor="originalPrice">السعر الأصلي ($) - اختياري</Label>
+          <Label htmlFor="originalPrice">السعر الأصلي (اختياري) ($)</Label>
           <Input
             id="originalPrice"
             name="originalPrice"
             type="number"
-            placeholder="اتركه فارغاً إذا لم يكن هناك خصم"
-            defaultValue={defaultValues?.originalPrice || ""}
+            defaultValue={initialData?.originalPrice || ""}
           />
         </div>
         <div>
           <Label htmlFor="categoryId">الفئة</Label>
-          <Select name="categoryId" defaultValue={defaultValues?.categoryId?.toString()} required>
+          <Select name="categoryId" defaultValue={initialData?.categoryId?.toString()} required>
             <SelectTrigger>
               <SelectValue placeholder="اختر الفئة" />
             </SelectTrigger>
@@ -406,12 +488,15 @@ function ProductForm({
           onChange={(e) => onImageUpload(e, setImageUrl)}
         />
         {imageUrl && (
-          <img
-            src={imageUrl}
-            alt="Preview"
-            className="mt-2 w-32 h-32 object-cover rounded"
-          />
+          <div className="mt-2">
+            <img
+              src={imageUrl}
+              alt="Preview"
+              className="w-32 h-32 object-cover rounded"
+            />
+          </div>
         )}
+        <input type="hidden" name="imageUrl" value={imageUrl} />
       </div>
 
       <Button type="submit" disabled={isLoading} className="w-full">
