@@ -1,5 +1,5 @@
 import { trpc } from "@/lib/trpc";
-import { MessageCircle, Clock, Shield, Truck, Sparkles, Watch, Gem, Smartphone, Crown, LayoutGrid, Menu, X } from "lucide-react";
+import { MessageCircle, Clock, Shield, Truck, Sparkles, Watch, Gem, Smartphone, Crown, LayoutGrid, Menu, X, Sparkle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
@@ -61,6 +61,14 @@ export default function Home() {
       gradient: "from-rose-500 to-pink-500",
       bgGradient: "from-rose-50 to-pink-50",
       borderColor: "border-rose-200 hover:border-rose-400"
+    },
+    { 
+      id: 5, 
+      name: "خواتم إسلامية", 
+      icon: Sparkle, 
+      gradient: "from-amber-500 to-yellow-500",
+      bgGradient: "from-amber-50 to-yellow-50",
+      borderColor: "border-amber-200 hover:border-amber-400"
     }
   ];
 
@@ -210,7 +218,7 @@ export default function Home() {
               {
                 icon: Truck,
                 title: "توصيل سريع",
-                desc: "توصيل مجاني لجميع أنحاء المملكة خلال 3-5 أيام عمل",
+                desc: "توصيل إلى كافة أنحاء العالم خلال 3-5 أيام عمل",
                 gradient: "from-blue-500 to-cyan-500",
                 bg: "from-blue-50 to-cyan-50"
               },
