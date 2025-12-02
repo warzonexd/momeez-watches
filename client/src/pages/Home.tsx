@@ -1,5 +1,5 @@
 import { trpc } from "@/lib/trpc";
-import { MessageCircle, Clock, Shield, Truck, Sparkles, Watch, Gem, Smartphone, Crown, LayoutGrid, Menu, X, Sparkle } from "lucide-react";
+import { MessageCircle, Clock, Shield, Truck, Sparkles, Watch, Gem, Smartphone, Crown, LayoutGrid, Menu, X, Sparkle, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
@@ -330,6 +330,15 @@ export default function Home() {
 
                   <CardContent className="p-6">
                     <h3 className="font-bold text-xl text-gray-900 mb-3 text-center line-clamp-1">{product.nameAr}</h3>
+                    
+                    <div className="flex items-center justify-center gap-1 mb-2">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-4 h-4 ${i < (product.rating || 5) ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`}
+                        />
+                      ))}
+                    </div>
                     
                     <div className="text-center mb-4">
                       <span className="text-3xl font-bold bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">${product.price}</span>

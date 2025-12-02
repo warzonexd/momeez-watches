@@ -53,6 +53,7 @@ export const products = mysqlTable("products", {
   price: int("price").notNull(), // Price in smallest currency unit (e.g., cents)
   imageUrl: text("imageUrl"),
   categoryId: int("categoryId").notNull(),
+  rating: int("rating").default(5).notNull(), // Rating out of 5
   isActive: int("isActive").default(1).notNull(), // 1 = active, 0 = inactive
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

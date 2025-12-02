@@ -15,6 +15,13 @@
       "when": 1764633982987,
       "tag": "0001_lucky_franklin_storm",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1764637537910,
+      "tag": "0002_wise_blindfold",
+      "breakpoints": true
     }
   ]
 }

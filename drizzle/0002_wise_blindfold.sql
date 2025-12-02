@@ -1,0 +1,1 @@
+ALTER TABLE `products` ADD `rating` int DEFAULT 5 NOT NULL;
