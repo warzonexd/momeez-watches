@@ -11,11 +11,13 @@ import AdminLogin from "./pages/AdminLogin";
 import FAQ from "./pages/FAQ";
 import About from "./pages/About";
 import Users from "./pages/Users";
+import ProductDetails from "./pages/ProductDetails";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/product/:id" component={ProductDetails} />
       <Route path="/admin" component={Admin} />
       <Route path="/admin-login" component={AdminLogin} />
       <Route path="/about" component={About} />

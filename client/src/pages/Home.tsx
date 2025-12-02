@@ -41,7 +41,20 @@ export default function Home() {
   };
 
   const sendWhatsAppMessage = (product: any) => {
-    const message = `مرحباً، أرغب في الاستفسار عن:\n\n📦 ${product.nameAr}\n💵 السعر: $${product.price}\n📝 الوصف: ${product.descriptionAr}`;
+    let message = `مرحباً، أرغب في الاستفسار عن:
+
+`;
+    message += `📦 ${product.nameAr}
+`;
+    if (product.productCode) {
+      message += `🔖 الكود: ${product.productCode}
+`;
+    }
+    message += `💵 السعر: $${product.price}
+`;
+    if (product.descriptionAr) {
+      message += `📝 الوصف: ${product.descriptionAr}`;
+    }
     const url = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
     window.open(url, "_blank");
   };
@@ -363,7 +376,8 @@ export default function Home() {
               {getFilteredProducts().map((product) => (
                 <Card
                   key={product.id}
-                  className="group hover:shadow-2xl transition-all duration-300 border border-gray-200 overflow-hidden hover:border-teal-300"
+                  className="group hover:shadow-2xl transition-all duration-300 border border-gray-200 overflow-hidden hover:border-teal-300 cursor-pointer"
+                  onClick={() => window.location.href = `/product/${product.id}`}
                 >
                   <ProductImageGallery product={product} />
 
