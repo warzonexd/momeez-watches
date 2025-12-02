@@ -37,6 +37,9 @@ export default function Admin() {
   const { user, loading: authLoading } = useAuth();
   const [, setLocation] = useLocation();
   const [isSimpleAuthChecked, setIsSimpleAuthChecked] = useState(false);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
 
   useEffect(() => {
     // Check simple authentication
@@ -55,9 +58,6 @@ export default function Admin() {
       </div>
     );
   }
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<any>(null);
 
   // Fetch data
   const { data: products, isLoading: productsLoading, refetch: refetchProducts } = trpc.products.list.useQuery();
