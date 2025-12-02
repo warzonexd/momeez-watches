@@ -1,5 +1,5 @@
 import { trpc } from "@/lib/trpc";
-import { MessageCircle, Clock, Shield, Truck, Sparkles, Watch, Gem, Smartphone, Crown, LayoutGrid, Menu, X, Sparkle, Star, Facebook, Send } from "lucide-react";
+import { MessageCircle, Clock, Shield, Truck, Sparkles, Watch, Gem, Smartphone, Crown, LayoutGrid, Menu, X, Sparkle, Star, Facebook, Send, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useState } from "react";
@@ -365,26 +365,16 @@ export default function Home() {
                   key={product.id}
                   className="group hover:shadow-2xl transition-all duration-300 border border-gray-200 overflow-hidden hover:border-teal-300"
                 >
-                  <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
-                    {product.originalPrice && product.originalPrice > product.price && (
-                      <div className="absolute top-2 left-2 z-10 bg-gradient-to-r from-red-600 to-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
-                        خصم {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
-                      </div>
-                    )}
-                    {product.imageUrl ? (
-                      <img
-                        src={product.imageUrl}
-                        alt={product.nameAr}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Watch className="w-24 h-24 text-gray-300" />
-                      </div>
-                    )}
-                  </div>
+                  <ProductImageGallery product={product} />
 
                   <CardContent className="p-6">
+                    {product.productCode && (
+                      <div className="text-center mb-2">
+                        <span className="text-xs font-mono text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                          {product.productCode}
+                        </span>
+                      </div>
+                    )}
                     <h3 className="font-bold text-xl text-gray-900 mb-3 text-center line-clamp-1">{product.nameAr}</h3>
                     
                     <div className="flex items-center justify-center gap-1 mb-2">
@@ -489,6 +479,99 @@ export default function Home() {
           </linearGradient>
         </defs>
       </svg>
+    </div>
+  );
+}
+
+function ProductImageGallery({ product }: { product: any }) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const { data: productImages } = trpc.productImages.getByProduct.useQuery(
+    { productId: product.id },
+    { enabled: !!product.id }
+  );
+
+  // Combine primary image with additional images
+  const allImages = [
+    ...(product.imageUrl ? [{ id: 0, imageUrl: product.imageUrl, isPrimary: 1 }] : []),
+    ...(productImages || []),
+  ];
+
+  const hasMultipleImages = allImages.length > 1;
+
+  const nextImage = () => {
+    setCurrentImageIndex((prev) => (prev + 1) % allImages.length);
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
+  };
+
+  const currentImage = allImages[currentImageIndex];
+
+  return (
+    <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100 group">
+      {product.originalPrice && product.originalPrice > product.price && (
+        <div className="absolute top-2 left-2 z-10 bg-gradient-to-r from-red-600 to-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
+          خصم {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
+        </div>
+      )}
+
+      {currentImage?.imageUrl ? (
+        <img
+          src={currentImage.imageUrl}
+          alt={product.nameAr}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center">
+          <Watch className="w-24 h-24 text-gray-300" />
+        </div>
+      )}
+
+      {hasMultipleImages && (
+        <>
+          {/* Navigation Arrows */}
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              prevImage();
+            }}
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+            aria-label="الصورة السابقة"
+          >
+            <ChevronRight className="w-5 h-5 text-gray-800" />
+          </button>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              nextImage();
+            }}
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity z-10"
+            aria-label="الصورة التالية"
+          >
+            <ChevronLeft className="w-5 h-5 text-gray-800" />
+          </button>
+
+          {/* Image Indicators */}
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+            {allImages.map((_, index) => (
+              <button
+                key={index}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setCurrentImageIndex(index);
+                }}
+                className={`w-2 h-2 rounded-full transition-all ${
+                  index === currentImageIndex
+                    ? "bg-white w-6"
+                    : "bg-white/50 hover:bg-white/75"
+                }`}
+                aria-label={`الصورة ${index + 1}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

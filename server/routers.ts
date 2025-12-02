@@ -52,6 +52,7 @@ export const appRouter = router({
     create: protectedProcedure
       .input(
         z.object({
+          productCode: z.string().optional(),
           name: z.string(),
           nameAr: z.string(),
           description: z.string().optional(),
@@ -72,6 +73,7 @@ export const appRouter = router({
       .input(
         z.object({
           id: z.number(),
+          productCode: z.string().optional(),
           name: z.string().optional(),
           nameAr: z.string().optional(),
           description: z.string().optional(),
@@ -122,6 +124,46 @@ export const appRouter = router({
         const result = await storagePut(filename, buffer, input.mimeType);
         
         return { url: result.url };
+      }),
+  }),
+
+  // Product Images router
+  productImages: router({
+    getByProduct: publicProcedure
+      .input(z.object({ productId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getProductImages(input.productId);
+      }),
+    create: protectedProcedure
+      .input(
+        z.object({
+          productId: z.number(),
+          imageUrl: z.string(),
+          isPrimary: z.number().optional(),
+          displayOrder: z.number().optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+        }
+        return await db.createProductImage(input);
+      }),
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+        }
+        return await db.deleteProductImage(input.id);
+      }),
+    setPrimary: protectedProcedure
+      .input(z.object({ productId: z.number(), imageId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") {
+          throw new TRPCError({ code: "FORBIDDEN", message: "Admin access required" });
+        }
+        return await db.setPrimaryImage(input.productId, input.imageId);
       }),
   }),
 });

@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, categories, products, InsertCategory, InsertProduct } from "../drizzle/schema";
+import { InsertUser, users, categories, products, productImages, InsertCategory, InsertProduct, InsertProductImage } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -147,6 +147,43 @@ export async function updateProduct(id: number, product: Partial<InsertProduct>)
 export async function deleteProduct(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  // Delete associated images first
+  await db.delete(productImages).where(eq(productImages.productId, id));
   const result = await db.delete(products).where(eq(products.id, id));
   return result;
+}
+
+// Product Images helpers
+export async function getProductImages(productId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(productImages).where(eq(productImages.productId, productId));
+}
+
+export async function createProductImage(image: InsertProductImage) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(productImages).values(image);
+  return result;
+}
+
+export async function deleteProductImage(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.delete(productImages).where(eq(productImages.id, id));
+  return result;
+}
+
+export async function setPrimaryImage(productId: number, imageId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  // First, unset all primary images for this product
+  await db.update(productImages)
+    .set({ isPrimary: 0 })
+    .where(eq(productImages.productId, productId));
+  // Then set the selected image as primary
+  await db.update(productImages)
+    .set({ isPrimary: 1 })
+    .where(eq(productImages.id, imageId));
+  return true;
 }

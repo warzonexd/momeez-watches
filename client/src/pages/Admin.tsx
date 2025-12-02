@@ -30,7 +30,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
-import { Loader2, Pencil, Plus, Trash2 } from "lucide-react";
+import { Loader2, Pencil, Plus, Trash2, Star, X, Image as ImageIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -144,8 +144,10 @@ export default function Admin() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const originalPriceStr = formData.get("originalPrice") as string;
+    const productCodeStr = formData.get("productCode") as string;
     
     createMutation.mutate({
+      productCode: productCodeStr || undefined,
       name: formData.get("name") as string,
       nameAr: formData.get("nameAr") as string,
       description: formData.get("description") as string,
@@ -161,9 +163,11 @@ export default function Admin() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const originalPriceStr = formData.get("originalPrice") as string;
+    const productCodeStr = formData.get("productCode") as string;
     
     updateMutation.mutate({
       id: editingProduct.id,
+      productCode: productCodeStr || undefined,
       name: formData.get("name") as string,
       nameAr: formData.get("nameAr") as string,
       description: formData.get("description") as string,
@@ -229,6 +233,7 @@ export default function Admin() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>الصورة</TableHead>
+                    <TableHead>الكود</TableHead>
                     <TableHead>الاسم</TableHead>
                     <TableHead>الفئة</TableHead>
                     <TableHead>السعر</TableHead>
@@ -250,6 +255,9 @@ export default function Admin() {
                             لا توجد صورة
                           </div>
                         )}
+                      </TableCell>
+                      <TableCell className="font-mono text-sm">
+                        {product.productCode || "-"}
                       </TableCell>
                       <TableCell className="font-medium">{product.nameAr}</TableCell>
                       <TableCell>{getCategoryName(product.categoryId)}</TableCell>
@@ -315,6 +323,11 @@ export default function Admin() {
                       )}
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold text-lg truncate">{product.nameAr}</h3>
+                        {product.productCode && (
+                          <p className="text-xs font-mono text-muted-foreground">
+                            {product.productCode}
+                          </p>
+                        )}
                         <p className="text-sm text-muted-foreground">{getCategoryName(product.categoryId)}</p>
                         <div className="mt-2">
                           {product.originalPrice && product.originalPrice > product.price ? (
@@ -397,9 +410,91 @@ function ProductForm({
   initialData?: any;
 }) {
   const [imageUrl, setImageUrl] = useState(initialData?.imageUrl || "");
+  const [additionalImages, setAdditionalImages] = useState<string[]>([]);
+  
+  const { data: existingImages } = trpc.productImages.getByProduct.useQuery(
+    { productId: initialData?.id },
+    { enabled: !!initialData?.id }
+  );
+
+  const createImageMutation = trpc.productImages.create.useMutation({
+    onSuccess: () => {
+      toast.success("تم إضافة الصورة بنجاح");
+    },
+    onError: (error) => {
+      toast.error("فشل في إضافة الصورة: " + error.message);
+    },
+  });
+
+  const deleteImageMutation = trpc.productImages.delete.useMutation({
+    onSuccess: () => {
+      toast.success("تم حذف الصورة بنجاح");
+    },
+    onError: (error) => {
+      toast.error("فشل في حذف الصورة: " + error.message);
+    },
+  });
+
+  const handleAdditionalImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("حجم الصورة يجب أن يكون أقل من 5 ميجابايت");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64Data = reader.result as string;
+      try {
+        const uploadMutation = trpc.products.uploadImage.useMutation();
+        const result = await uploadMutation.mutateAsync({
+          base64Data,
+          mimeType: file.type,
+        });
+        
+        if (initialData?.id) {
+          // If editing existing product, save to database
+          await createImageMutation.mutateAsync({
+            productId: initialData.id,
+            imageUrl: result.url,
+            displayOrder: (existingImages?.length || 0) + additionalImages.length,
+          });
+        } else {
+          // If new product, just add to temporary array
+          setAdditionalImages([...additionalImages, result.url]);
+        }
+        
+        toast.success("تم رفع الصورة بنجاح");
+      } catch (error) {
+        toast.error("فشل في رفع الصورة");
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDeleteImage = async (imageId: number) => {
+    if (confirm("هل أنت متأكد من حذف هذه الصورة؟")) {
+      await deleteImageMutation.mutateAsync({ id: imageId });
+    }
+  };
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="productCode">كود المنتج (اختياري)</Label>
+        <Input
+          id="productCode"
+          name="productCode"
+          placeholder="مثال: SAW-001"
+          defaultValue={initialData?.productCode || ""}
+        />
+        <p className="text-xs text-muted-foreground mt-1">
+          كود فريد للمنتج يساعد في التتبع والإدارة
+        </p>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="name">الاسم (English)</Label>
@@ -480,7 +575,7 @@ function ProductForm({
       </div>
 
       <div>
-        <Label htmlFor="image">صورة المنتج</Label>
+        <Label htmlFor="image">الصورة الرئيسية</Label>
         <Input
           id="image"
           type="file"
@@ -498,6 +593,46 @@ function ProductForm({
         )}
         <input type="hidden" name="imageUrl" value={imageUrl} />
       </div>
+
+      {initialData?.id && (
+        <div>
+          <Label>صور إضافية</Label>
+          <div className="mt-2 grid grid-cols-3 md:grid-cols-4 gap-4">
+            {existingImages?.map((img) => (
+              <div key={img.id} className="relative group">
+                <img
+                  src={img.imageUrl}
+                  alt="Product"
+                  className="w-full h-24 object-cover rounded"
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  className="absolute top-1 left-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => handleDeleteImage(img.id)}
+                >
+                  <X className="w-3 h-3" />
+                </Button>
+                {img.isPrimary === 1 && (
+                  <div className="absolute bottom-1 right-1 bg-yellow-500 text-white text-xs px-2 py-1 rounded">
+                    <Star className="w-3 h-3" />
+                  </div>
+                )}
+              </div>
+            ))}
+            <label className="border-2 border-dashed rounded flex items-center justify-center h-24 cursor-pointer hover:bg-muted/50 transition-colors">
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAdditionalImageUpload}
+              />
+              <ImageIcon className="w-8 h-8 text-muted-foreground" />
+            </label>
+          </div>
+        </div>
+      )}
 
       <Button type="submit" disabled={isLoading} className="w-full">
         {isLoading ? (

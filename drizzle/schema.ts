@@ -46,13 +46,14 @@ export type InsertCategory = typeof categories.$inferInsert;
  */
 export const products = mysqlTable("products", {
   id: int("id").autoincrement().primaryKey(),
+  productCode: varchar("productCode", { length: 50 }).unique(), // Unique product code/SKU
   name: varchar("name", { length: 200 }).notNull(),
   nameAr: varchar("nameAr", { length: 200 }).notNull(),
   description: text("description"),
   descriptionAr: text("descriptionAr"),
   price: int("price").notNull(), // Current price (after discount if applicable)
   originalPrice: int("originalPrice"), // Original price before discount (null if no discount)
-  imageUrl: text("imageUrl"),
+  imageUrl: text("imageUrl"), // Legacy field - kept for backward compatibility
   categoryId: int("categoryId").notNull(),
   rating: int("rating").default(5).notNull(), // Rating out of 5
   isActive: int("isActive").default(1).notNull(), // 1 = active, 0 = inactive
@@ -62,3 +63,17 @@ export const products = mysqlTable("products", {
 
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = typeof products.$inferInsert;
+/**
+ * Product images table for multiple images per product
+ */
+export const productImages = mysqlTable("product_images", {
+  id: int("id").autoincrement().primaryKey(),
+  productId: int("productId").notNull(),
+  imageUrl: text("imageUrl").notNull(),
+  isPrimary: int("isPrimary").default(0).notNull(), // 1 = primary image, 0 = secondary
+  displayOrder: int("displayOrder").default(0).notNull(), // Order of display in gallery
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ProductImage = typeof productImages.$inferSelect;
+export type InsertProductImage = typeof productImages.$inferInsert;
