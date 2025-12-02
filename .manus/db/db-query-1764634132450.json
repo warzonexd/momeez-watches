@@ -1,0 +1,9 @@
+{
+  "query": "INSERT INTO categories (name, nameAr, slug, description) VALUES\n('Classic Watches', 'ساعات كلاسيكية', 'classic', 'Elegant classic timepieces'),\n('Islamic Watches', 'ساعات إسلامية', 'islamic', 'Watches with Islamic features'),\n('Digital Watches', 'ساعات رقمية', 'digital', 'Modern digital watches'),\n('Women''s Watches', 'ساعات نسائية', 'women', 'Elegant watches for women');",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2RB2ghce1b3oDu7.root --database dAicgeHU85KicauZg3Eg9L --execute INSERT INTO categories (name, nameAr, slug, description) VALUES\n('Classic Watches', 'ساعات كلاسيكية', 'classic', 'Elegant classic timepieces'),\n('Islamic Watches', 'ساعات إسلامية', 'islamic', 'Watches with Islamic features'),\n('Digital Watches', 'ساعات رقمية', 'digital', 'Modern digital watches'),\n('Women''s Watches', 'ساعات نسائية', 'women', 'Elegant watches for women');",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 1914
+}
