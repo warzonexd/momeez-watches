@@ -16,6 +16,9 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import ImageLightbox from "@/components/ImageLightbox";
+import { ReviewForm } from "@/components/ReviewForm";
+import { ReviewsList } from "@/components/ReviewsList";
+import { RatingDisplay } from "@/components/RatingDisplay";
 
 const WHATSAPP_NUMBER = "905343222221";
 
@@ -240,20 +243,8 @@ export default function ProductDetails() {
             )}
 
             {/* Rating */}
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`w-5 h-5 ${
-                      i < (product.rating || 5)
-                        ? "fill-amber-400 text-amber-400"
-                        : "text-gray-300"
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="text-gray-600">({product.rating || 5} من 5)</span>
+            <div>
+              <RatingDisplay productId={productId} size="lg" />
             </div>
 
             {/* Price */}
@@ -335,6 +326,21 @@ export default function ProductDetails() {
               <MessageCircle className="w-6 h-6 ml-2" />
               اطلب عبر واتساب
             </Button>
+          </div>
+        </div>
+
+        {/* Reviews Section */}
+        <div className="mt-16 border-t pt-16">
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
+            المراجعات والتقييمات
+          </h2>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-1">
+              <ReviewForm productId={productId} />
+            </div>
+            <div className="lg:col-span-2">
+              <ReviewsList productId={productId} />
+            </div>
           </div>
         </div>
 

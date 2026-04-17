@@ -127,6 +127,42 @@ export const appRouter = router({
       }),
   }),
 
+  // Reviews router
+  reviews: router({
+    getByProduct: publicProcedure
+      .input(z.object({ productId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getProductReviews(input.productId);
+      }),
+    getAverageRating: publicProcedure
+      .input(z.object({ productId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getAverageRating(input.productId);
+      }),
+    getCount: publicProcedure
+      .input(z.object({ productId: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getReviewCount(input.productId);
+      }),
+    create: publicProcedure
+      .input(
+        z.object({
+          productId: z.number(),
+          userName: z.string().min(2),
+          userEmail: z.string().email(),
+          rating: z.number().min(1).max(5),
+          title: z.string().optional(),
+          comment: z.string().min(10),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return await db.createReview({
+          ...input,
+          isApproved: 0,
+        });
+      }),
+  }),
+
   // Product Images router
   productImages: router({
     getByProduct: publicProcedure

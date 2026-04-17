@@ -77,3 +77,22 @@ export const productImages = mysqlTable("product_images", {
 
 export type ProductImage = typeof productImages.$inferSelect;
 export type InsertProductImage = typeof productImages.$inferInsert;
+
+/**
+ * Product reviews table for customer reviews and ratings
+ */
+export const reviews = mysqlTable("reviews", {
+  id: int("id").autoincrement().primaryKey(),
+  productId: int("productId").notNull(),
+  userName: varchar("userName", { length: 100 }).notNull(),
+  userEmail: varchar("userEmail", { length: 320 }).notNull(),
+  rating: int("rating").notNull(),
+  title: varchar("title", { length: 200 }),
+  comment: text("comment").notNull(),
+  isApproved: int("isApproved").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Review = typeof reviews.$inferSelect;
+export type InsertReview = typeof reviews.$inferInsert;

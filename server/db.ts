@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, categories, products, productImages, InsertCategory, InsertProduct, InsertProductImage } from "../drizzle/schema";
+import { InsertUser, users, categories, products, productImages, reviews, InsertCategory, InsertProduct, InsertProductImage, InsertReview, Review } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -193,4 +193,34 @@ export async function setPrimaryImage(productId: number, imageId: number) {
     .set({ isPrimary: 1 })
     .where(eq(productImages.id, imageId));
   return true;
+}
+
+// Reviews helpers
+export async function getProductReviews(productId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(reviews).where(eq(reviews.productId, productId));
+}
+
+export async function createReview(review: InsertReview) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(reviews).values(review);
+  return result;
+}
+
+export async function getAverageRating(productId: number) {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select().from(reviews).where(eq(reviews.productId, productId));
+  if (result.length === 0) return 0;
+  const sum = result.reduce((acc: number, review: Review) => acc + review.rating, 0);
+  return Math.round((sum / result.length) * 10) / 10;
+}
+
+export async function getReviewCount(productId: number) {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.select().from(reviews).where(eq(reviews.productId, productId));
+  return result.length;
 }

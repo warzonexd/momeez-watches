@@ -43,6 +43,13 @@
       "when": 1764673272029,
       "tag": "0005_wonderful_marten_broadcloak",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1776392448210,
+      "tag": "0006_chilly_infant_terrible",
+      "breakpoints": true
     }
   ]
 }

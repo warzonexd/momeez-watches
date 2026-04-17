@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { Input } from "@/components/ui/input";
 import ImageLightbox from "@/components/ImageLightbox";
+import { RatingDisplay } from "@/components/RatingDisplay";
 
 const WHATSAPP_NUMBER = "905343222221";
 
@@ -392,13 +393,8 @@ export default function Home() {
                     )}
                     <h3 className="font-bold text-xl text-gray-900 mb-3 text-center line-clamp-1">{product.nameAr}</h3>
                     
-                    <div className="flex items-center justify-center gap-1 mb-2">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-4 h-4 ${i < (product.rating || 5) ? 'fill-amber-400 text-amber-400' : 'text-gray-300'}`}
-                        />
-                      ))}
+                    <div className="flex items-center justify-center mb-2">
+                      <RatingDisplay productId={product.id} size="sm" />
                     </div>
                     
                     <div className="text-center mb-4">
